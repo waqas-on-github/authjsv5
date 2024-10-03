@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import * as argon2 from "argon2";
+import bcrypt from "bcryptjs";
+
 import { signUpSchema } from "@/schema/userSchema";
 import { db } from "@/prsmaClient";
 
@@ -38,7 +39,7 @@ export const registerAction = async (data: z.infer<typeof signUpSchema>) => {
     }
 
     // Hash password
-    const hashedPassword = await argon2.hash(password);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Add user data into the database
     const user = await db.user.create({

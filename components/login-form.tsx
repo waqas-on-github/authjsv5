@@ -35,7 +35,9 @@ export default function LoginForm() {
         if (inputValues) {
             // sanitize data before sending to server 
 
-            loginAction(inputValues)
+            const responce = await loginAction(inputValues)
+            console.log(responce);
+
         }
 
 
