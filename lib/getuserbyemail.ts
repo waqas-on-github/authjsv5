@@ -7,3 +7,13 @@ export const getUserByEmail = async (email: string) => {
     },
   });
 };
+
+
+
+export const getuserById = async (userId: string) => {
+  return await db.user.findFirst({
+    where: {
+      id: userId,
+    },
+  });
+};

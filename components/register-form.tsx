@@ -33,13 +33,14 @@ const RegisterForm = () => {
     // get input values
     const inputValues = getValues(); //these value are viladated buy zod
 
-    console.log(inputValues);
-
     if (inputValues) {
       // sanitize data before sending to server
+      console.log(inputValues);
 
 
-      registerAction(inputValues);
+      const resp = await registerAction(inputValues);
+      console.log(resp);
+
     }
 
     reset();

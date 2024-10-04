@@ -3,10 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { signInSchema } from "@/lib/signinSchema"
 import { loginAction } from "@/actions/login"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
+import { signInSchema } from "@/schema/userSchema"
+import { GitHubLogoIcon } from "@radix-ui/react-icons"
+import { signIn } from 'next-auth/react'
 
 
 
@@ -16,30 +18,23 @@ export default function LoginForm() {
         resolver: zodResolver(signInSchema)
     })
 
+
+
+
     const submit = async () => {
         // trigger a userform to get values
         const val = await trigger()
         if (!val) {
             console.log("form not triggerd. trigger value -->", val);
-            console.log(errors);
-
             return
-
         }
         // get input values 
         const inputValues = getValues()  //these value are viladated buy zod 
-
-        console.log(inputValues);
-
-
         if (inputValues) {
-            // sanitize data before sending to server 
-
-            const responce = await loginAction(inputValues)
-            console.log(responce);
+            const resp = await loginAction(inputValues)
+            console.log(resp);
 
         }
-
 
         reset()
     }
@@ -47,6 +42,7 @@ export default function LoginForm() {
 
 
     return (
+        <div className="flex flex-col items-center justify-center gap-5">
         <form action={submit} className="flex flex-col items-center justify-center gap-5" >
             <div>
                 <label htmlFor="email">email</label>
@@ -64,5 +60,17 @@ export default function LoginForm() {
             <Button className="text-black bg-white " >submit</Button>
 
         </form>
+            <Button onClick={(e) => {
+                e.preventDefault()
+                signIn('github')
+
+            }} > <GitHubLogoIcon /></Button>
+
+            <Button onClick={(e) => {
+                e.preventDefault()
+                signIn('google')
+
+            }} > Google</Button>
+        </div>
     )
 } 
