@@ -7,6 +7,11 @@ import { signInSchema } from "./schema/userSchema";
 import { getUserByEmail } from "./lib/getuserbyemail";
 
 export default {
+  debug: true,
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -24,7 +29,10 @@ export default {
           const { email, password } = validateFiels.data;
 
           const user = await getUserByEmail(email);
-          if (!user || !user.password) return null;
+          if (!user || !user.password) {
+            console.log("user dose not eists ");
+            return null;
+          }
 
           const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -34,4 +42,5 @@ export default {
       },
     }),
   ],
+  secret: process.env.SECRET, // This is required in production
 } satisfies NextAuthConfig;
