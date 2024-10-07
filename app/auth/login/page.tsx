@@ -1,9 +1,13 @@
 import LoginForm from "@/components/login-form";
+import LoginWithCreditials from "@/components/loginCrediantals";
 
 
 const LoginPage = () => {
     return (
-        <LoginForm />
+        <>
+            <LoginWithCreditials />
+            <LoginForm />  
+        </>
     );
 }
 

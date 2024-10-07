@@ -36,6 +36,15 @@ export const {
       session.role = token.role as "ADMIN" | "USER";
       return session;
     },
+
+    async signIn({ user, account }) {
+      if (account?.provider !== "credentials") return true;
+      if (user.id) {
+        const existingUser = await getuserById(user?.id);
+        if (!existingUser?.emailVerified) return false;
+      }
+      return true;
+    },
   },
 
   adapter: PrismaAdapter(db),

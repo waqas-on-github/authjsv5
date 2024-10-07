@@ -8,9 +8,30 @@ import { Button } from "./ui/button";
 
 import { signUpSchema } from "@/schema/userSchema";
 import { registerAction } from "@/actions/register";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 
 const RegisterForm = () => {
+
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: registerAction,
+
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(data.data.successMesage)
+      }
+
+      if (!data.success) {
+        toast.error(data.error.errorMessage)
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
+
   const {
     register,
     trigger,
@@ -34,17 +55,14 @@ const RegisterForm = () => {
     const inputValues = getValues(); //these value are viladated buy zod
 
     if (inputValues) {
-      // sanitize data before sending to server
-      console.log(inputValues);
 
-
-      const resp = await registerAction(inputValues);
-      console.log(resp);
-
+      mutate(inputValues)
     }
 
     reset();
   };
+
+
 
   return (
     <form
@@ -75,9 +93,16 @@ const RegisterForm = () => {
             {errors?.password?.message}
           </span>
         )}
-      </div>
+      </div> 
 
-      <Button>submit</Button>
+      {isPending ?
+
+        <Button disabled >submitting ....</Button>
+        :
+        <Button type="submit" >submit</Button>
+
+      }
+
     </form>
   );
 };
