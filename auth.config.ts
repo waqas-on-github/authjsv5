@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { signInSchema } from "./schema/userSchema";
-import { getUserByEmail } from "./lib/getuserbyemail";
+import { getUserByEmail } from "./lib/Dal";
 
 export default {
   debug: true,
@@ -12,6 +12,7 @@ export default {
     signIn: "/auth/login",
     error: "/auth/error",
   },
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,

@@ -1,82 +1,105 @@
 "use server";
-import { signIn } from "@/auth";
-import { GenerateVerficationToken, getUserByEmail } from "@/lib/getuserbyemail";
-import { sendVerificationEmail } from "@/lib/mail";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { signInSchema } from "@/schema/userSchema";
+
+import * as z from "zod";
 import { AuthError } from "next-auth";
-import { z } from "zod";
-import bcrypt from "bcryptjs";
-import { createResponce } from "@/lib/responces";
+import { signInSchema } from "@/schema/userSchema";
+import { generateVerficationToken, getUserByEmail } from "@/lib/Dal";
+import { sendVerificationEmail } from "@/lib/mail";
+import { signIn } from "@/auth";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
-export const loginAction = async (data: z.infer<typeof signInSchema>) => {
-  // Validate input against schema
+export const loginAction = async (
+  values: z.infer<typeof signInSchema>,
+  callbackUrl?: string | null
+) => {
+  const validatedFields = signInSchema.safeParse(values);
 
-  const validationResult = signInSchema.safeParse(data);
-
-  // send responce if verification failed
-  if (!validationResult.success) {
-    return createResponce({ errorMessage: "Invalid fields", success: false });
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
   }
 
-  const { email, password } = validationResult.data;
+  const { email, password } = validatedFields.data;
 
   const existingUser = await getUserByEmail(email);
 
   if (!existingUser || !existingUser.email || !existingUser.password) {
-    return createResponce({
-      success: false,
-      errorMessage: "Invalid credentials",
-    });
+    return { error: "Email does not exist!" };
   }
 
   if (!existingUser.emailVerified) {
-    const passwordMatch = await bcrypt.compare(password, existingUser.password);
-    if (!passwordMatch)
-      return createResponce({
-        errorMessage: "invalid crediantals ",
-        success: false,
-      });
-    const token = await GenerateVerficationToken(existingUser.email);
-    await sendVerificationEmail(email, token);
+    const verificationToken = await generateVerficationToken(
+      existingUser.email
+    );
 
-    return createResponce({
-      successMesage: "Verification email sent",
-      success: true,
-    });
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
+
+    return { success: "Confirmation email sent!" };
   }
+
+  // if (existingUser.isTwoFactorEnabled && existingUser.email) {
+  //   if (code) {
+  //     const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
+
+  //     if (!twoFactorToken) {
+  //       return { error: "Invalid code!" };
+  //     }
+
+  //     if (twoFactorToken.token !== code) {
+  //       return { error: "Invalid code!" };
+  //     }
+
+  //     const hasExpired = new Date(twoFactorToken.expires) < new Date();
+
+  //     if (hasExpired) {
+  //       return { error: "Code expired!" };
+  //     }
+
+  //     await db.twoFactorToken.delete({
+  //       where: { id: twoFactorToken.id },
+  //     });
+
+  //     const existingConfirmation = await getTwoFactorConfirmationByUserId(
+  //       existingUser.id
+  //     );
+
+  //     if (existingConfirmation) {
+  //       await db.twoFactorConfirmation.delete({
+  //         where: { id: existingConfirmation.id },
+  //       });
+  //     }
+
+  //     await db.twoFactorConfirmation.create({
+  //       data: {
+  //         userId: existingUser.id,
+  //       },
+  //     });
+  //   } else {
+  //     const twoFactorToken = await generateTwoFactorToken(existingUser.email);
+  //     await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
+
+  //     return { twoFactor: true };
+  //   }
+  // }
 
   try {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
-    });
-
-    return createResponce({
-      successMesage: "Logged in successfully",
-      success: true,
+      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return createResponce({
-            errorMessage: "Invalid credentials",
-            success: false,
-          });
+          return { error: "Invalid credentials!" };
         default:
-          return createResponce({
-            errorMessage: "Something went wrong",
-            success: false,
-          });
+          return { error: "Something went wrong!" };
       }
     }
 
-    // If the error is not an AuthError, return a generic error response
-    return createResponce({
-      errorMessage: "An unexpected error occurred",
-      success: false,
-    });
+    throw error;
   }
 };

@@ -1,5 +1,4 @@
 'use client'
-
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -9,6 +8,7 @@ import { signInSchema } from "@/schema/userSchema"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { loginAction } from "@/actions/login"
+import Link from "next/link"
 
 
 export default function LoginWithCreditials() {
@@ -26,14 +26,16 @@ export default function LoginWithCreditials() {
 
         mutationFn: loginAction,
         onSuccess: (data) => {
-            if (data.success) {
-                toast.success(data.data.successMesage)
+
+
+            if (data?.success) {
+                toast.success("logged in successfully")
 
 
             }
 
-            if (!data.success) {
-                toast.error(data.error.errorMessage)
+            if (data?.error) {
+                toast.error('failed to login')
             }
         }
         , onError(error) {
@@ -51,6 +53,8 @@ export default function LoginWithCreditials() {
 
     const submit = async (e: { preventDefault: () => void }) => {
         e.preventDefault()
+
+
         const val = await trigger();
         if (!val) {
             console.log("Form validation failed:", errors);
@@ -58,11 +62,12 @@ export default function LoginWithCreditials() {
         }
 
         const inputValues = getValues();
-        if (inputValues) {
+
             mutate(inputValues);
 
+
             reset();
-        }
+
     };
 
 
@@ -73,14 +78,17 @@ export default function LoginWithCreditials() {
         <form onSubmit={submit} className="flex flex-col items-center justify-center gap-5">
             <div>
                 <label htmlFor="email">Email</label>
-                <Input type="email" {...register('email')} />
+                <Input type="email" {...register('email')} autoComplete='email' />
                 {errors?.email && <span className="text-sm text-red-400">{errors.email.message}</span>}
             </div>
 
             <div>
                 <label htmlFor="password">Password</label>
-                <Input type="password" {...register('password')} />
+                <Input type="password" {...register('password')} autoComplete="current-password" />
                 {errors?.password && <span className="text-sm text-red-400">{errors.password.message}</span>}
+            </div>
+            <div>
+                <Link href='/auth/reset' >forgot password?</Link>
             </div>
             {
                 isPending ?

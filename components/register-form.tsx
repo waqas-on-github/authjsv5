@@ -47,7 +47,7 @@ const RegisterForm = () => {
     const val = await trigger();
     if (!val) {
       console.log("form not triggerd. trigger value -->", val);
-      console.log(errors);
+
 
       return;
     }

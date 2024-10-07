@@ -1,3 +1,4 @@
+import Verify from "@/components/verify"
 
 
 const Verification = ({ searchParams }: { searchParams: { token: string } }) => {
@@ -9,7 +10,9 @@ const Verification = ({ searchParams }: { searchParams: { token: string } }) => 
 
 
     return (
-        <div>verification page </div>
+        <>
+            <Verify token={token} />
+        </>
     )
 }
 

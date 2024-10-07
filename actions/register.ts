@@ -5,19 +5,16 @@ import bcrypt from "bcryptjs";
 
 import { signUpSchema } from "@/schema/userSchema";
 import { db } from "@/prsmaClient";
-import { GenerateVerficationToken } from "@/lib/getuserbyemail";
-import { createResponse } from "@/lib/responces";
 import { sendVerificationEmail } from "@/lib/mail";
-
-// Helper function for error responses
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { createResponce } from "../lib/responces";
+import { generateVerficationToken } from "@/lib/Dal";
 
 export const registerAction = async (data: z.infer<typeof signUpSchema>) => {
   // Validate input against schema
   const validationResult = signUpSchema.safeParse(data);
 
   if (!validationResult.success) {
-    return createResponse({
+    return createResponce({
       success: false,
       errorMessage: "validation failed",
     });
@@ -30,7 +27,7 @@ export const registerAction = async (data: z.infer<typeof signUpSchema>) => {
     const doesEmailExist = await db.user.findFirst({ where: { email } });
 
     if (doesEmailExist) {
-      return createResponse({
+      return createResponce({
         success: false,
         errorMessage: "email already exists",
       });
@@ -51,20 +48,20 @@ export const registerAction = async (data: z.infer<typeof signUpSchema>) => {
 
     if (user && user.email) {
       const verificationToken: Awaited<
-        ReturnType<typeof GenerateVerficationToken>
-      > = await GenerateVerficationToken(user.email);
+        ReturnType<typeof generateVerficationToken>
+      > = await generateVerficationToken(user.email);
 
-      await sendVerificationEmail(email, verificationToken);
+      await sendVerificationEmail(email, verificationToken.token);
     }
 
-    return createResponse({
+    return createResponce({
       success: true,
       successMesage: "verification email sent ",
     });
   } catch (error) {
     console.error("Error during sign-up:", error); // Log the error for debugging
 
-    return createResponse({
+    return createResponce({
       success: false,
       errorMessage: "Error during sign-up",
     });

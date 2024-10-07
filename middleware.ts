@@ -15,7 +15,7 @@ export default auth(async (req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  console.log(req.auth); // For debugging
+  // console.log(req.auth); // For debugging
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
@@ -23,7 +23,7 @@ export default auth(async (req) => {
 
   // Skip API auth routes
   if (isApiAuthRoute) {
-    return; // No action needed for API routes
+    return; // No action needed for API routes request keep going ....
   }
 
   // Redirect logged-in users trying to access auth pages

@@ -3,7 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import authConfig from "./auth.config";
 import { db } from "./prsmaClient";
-import { getuserById } from "./lib/getuserbyemail";
+import { getuserById } from "./lib/Dal";
 
 export const {
   handlers: { GET, POST },
@@ -28,7 +28,6 @@ export const {
           token.role = userData.role;
         }
       }
-      console.log(token);
 
       return token;
     },
